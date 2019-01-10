@@ -1,0 +1,13 @@
+{
+  "extends": "@atomix/eslint-config-react",
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "rules": {
+    "react/sort-comp": "off"
+  },
+  "env": {
+    "jest": true
+  }
+}
