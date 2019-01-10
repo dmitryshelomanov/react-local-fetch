@@ -10,7 +10,7 @@
 
 ## You can use LocalFetching to...
 * * *
-# ...if you are need to make fetch-request
+# ...if you need to make fetch-request
 
 Usually you do something like the example below:
 
