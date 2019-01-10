@@ -96,5 +96,11 @@ const enhance = compose(
   }),
 )
 
-const view = () => {}
+const view = ({ news }) => {
+  if (news.status === fetchStatus.fail) {
+    return '...has some error'
+  }
+
+  return news.result.map(renderer)
+}
 ```
