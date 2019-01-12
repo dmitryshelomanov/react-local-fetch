@@ -1,9 +1,9 @@
 # React-local-fetch
 
-[![build status](https://img.shields.io/travis/acdlite/recompose/master.svg?style=flat-square)](https://travis-ci.org/acdlite/recompose)
-[![coverage](https://img.shields.io/codecov/c/github/acdlite/recompose.svg?style=flat-square)](https://codecov.io/github/acdlite/recompose)
-[![code climate](https://img.shields.io/codeclimate/github/acdlite/recompose.svg?style=flat-square)](https://codeclimate.com/github/acdlite/recompose)
-[![npm downloads](https://img.shields.io/npm/dm/recompose.svg?style=flat-square)](https://www.npmjs.com/package/recompose)
+Simple lib for fetch
+
+[example on codesandbox](https://codesandbox.io/s/88pkm515j)
+
 * * *
 > ## Notice
 > This lib intended for react project without [hooks](https://reactjs.org/docs/hooks-intro.html)
