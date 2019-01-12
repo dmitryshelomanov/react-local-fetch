@@ -25,9 +25,7 @@
   },
   "homepage": "https://github.com/userbq201/react-local-fetch#readme",
   "dependencies": {
-    "is-plain-object": "^2.0.4"
-  },
-  "peerDependencies": {
+    "is-plain-object": "^2.0.4",
     "react": "^16.7.0",
     "react-dom": "^16.7.0"
   },
