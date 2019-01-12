@@ -76,31 +76,37 @@ import { withLocalFetch, fetchStatus } from 'react-local-fetch'
 import { compose, lifecycle } from 'recompose'
 
 
+const newsReducer = (state = [], action) => {
+  switch(action.type) {
+    case 'SET': return ({
+      ...state,
+      data: action.payload,
+    }),
+    default: return state,
+  }
+}
+
 const enhance = compose(
-  withLocalFetch({
-    news: { action: apiFn, initialResult: [] }, // initialResult might be function [(pops) => []]
+  withLocalFetch('news', {
+    action: apiFn,
+    reducer: newsReducer,
   }),
   lifecycle({
     componentDidMount() {
-      /*
-        news type
-        {
-          fetch: any => any,
-          status: { initial: number, loading: number, fail: number, ready: number },
-          result: any
-        }
-      */
-      this.props.news
-        .fetch({ pageSlug: 'slug' })
+      this.props.news.fetch({
+        pageId: 1,
+        type: 'SET',
+      })
     },
   }),
 )
+
 
 const view = ({ news }) => {
   if (news.status === fetchStatus.fail) {
     return '...has some error'
   }
 
-  return news.result.map(renderer)
+  return news.data.map(renderer)
 }
 ```
