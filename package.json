@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "npx babel ./src -d ./lib",
-    "test:code": "npx jest"
+    "test:code": "npx jest",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
