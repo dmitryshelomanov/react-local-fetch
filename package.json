@@ -8,6 +8,12 @@
     "test:code": "npx jest",
     "prepublish": "npm run build"
   },
+  "keywords": [
+    "fetch",
+    "react",
+    "request",
+    "react fetch"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/userbq201/react-local-fetch.git"
