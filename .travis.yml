@@ -8,5 +8,4 @@ node_js:
 sudo: false
 
 script:
-  - npm install
   - npm run test:code
