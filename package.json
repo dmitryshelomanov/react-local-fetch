@@ -2,7 +2,7 @@
   "name": "react-local-fetch",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "npx babel ./src -d ./lib",
     "test:code": "npx jest"
@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/userbq201/react-local-fetch#readme",
   "dependencies": {
+    "is-plain-object": "^2.0.4"
+  },
+  "peerDependencies": {
     "react": "^16.7.0",
     "react-dom": "^16.7.0"
   },
@@ -28,6 +31,7 @@
     "babel-eslint": "^10.0.1",
     "babel-jest": "^23.6.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "enzyme": "^3.8.0",
