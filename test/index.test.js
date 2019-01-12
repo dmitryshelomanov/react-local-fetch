@@ -8,28 +8,27 @@ import { withLocalFetch, fetchStatus } from '../src/index'
 Enzyme.configure({ adapter: new Adapter() })
 
 let viewStub = null
+let testArgsForFetch = {}
 
 beforeEach(() => {
-  viewStub = ({ news, users }) => (
+  viewStub = ({ news }) => (
     <div>
       <button
-        onClick={() => news.fetch({ id: 1 })}
+        onClick={() => news.fetch(testArgsForFetch)}
         testid="fetchNews"
       >
         fetch news
-      </button>
-      <button
-        onClick={() => users.fetch({ id: 2 })}
-        testid="fetchUsers"
-      >
-        fetch users
       </button>
     </div>
   )
 })
 
+afterEach(() => {
+  testArgsForFetch = {}
+})
+
 test('Should hoc render without error', () => {
-  const MyComponent = withLocalFetch()(() => <p>hello</p>)
+  const MyComponent = withLocalFetch('news', {})((p) => <p>hello</p>)
   const wrapper = renderer.create(<MyComponent />)
 
   expect(wrapper).toMatchSnapshot()
@@ -37,36 +36,107 @@ test('Should hoc render without error', () => {
 
 test('Should request function was called', async () => {
   const mockRequest = jest.fn()
-  const requests = { news: mockRequest, users: mockRequest }
-  const enhance = withLocalFetch(requests)
+  const enhance = withLocalFetch('news', { action: mockRequest })
   const TestComponent = enhance(viewStub)
   const wrapper = mount(<TestComponent />)
   const newsBtn = wrapper.find('[testid="fetchNews"]')
-  const usersBtn = wrapper.find('[testid="fetchUsers"]')
 
   newsBtn.simulate('click')
-  usersBtn.simulate('click')
 
-  expect(requests.news.mock.calls.length).toBe(2)
+  expect(mockRequest.mock.calls.length).toBe(1)
 })
 
-test('Mapping fetchStatus and fetch result status', async () => {
+test('Should request function was called if option is function', async () => {
   const mockRequest = jest.fn()
-  const mockRequestWithThrow = () => {
-    throw new Error('some error message')
-  }
-  const requests = { news: mockRequest, users: mockRequestWithThrow }
-  const enhance = withLocalFetch(requests)
+  const enhance = withLocalFetch('news', (props) => ({ action: props.mockRequest }))
+  const TestComponent = enhance(viewStub)
+  const wrapper = mount(<TestComponent mockRequest={mockRequest} />)
+  const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+  newsBtn.simulate('click')
+
+  expect(mockRequest.mock.calls.length).toBe(1)
+})
+
+test('FetchStatus should be ready', async () => {
+  const mockRequest = jest.fn()
+  const enhance = withLocalFetch('news', { action: mockRequest })
   const TestComponent = enhance(viewStub)
   const wrapper = mount(<TestComponent />)
   const newsBtn = wrapper.find('[testid="fetchNews"]')
-  const usersBtn = wrapper.find('[testid="fetchUsers"]')
 
   await newsBtn.simulate('click')
-  await usersBtn.simulate('click')
 
   const { state } = wrapper.instance()
 
-  expect(state.requests.news.status).toBe(fetchStatus.ready)
-  expect(state.requests.users.status).toBe(fetchStatus.fail)
+  expect(state.status).toBe(fetchStatus.ready)
+})
+
+test('FetchStatus should be fail and have valid error object', async () => {
+  const message = 'some error'
+  const mockRequest = () => {
+    throw new Error(message)
+  }
+  const enhance = withLocalFetch('news', { action: mockRequest })
+  const TestComponent = enhance(viewStub)
+  const wrapper = mount(<TestComponent />)
+  const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+  await newsBtn.simulate('click')
+
+  const { state } = wrapper.instance()
+
+  expect(state.status).toBe(fetchStatus.fail)
+  expect(state.error.message).toBe(message)
+})
+
+test('state should be user object', async () => {
+  const mockRequest = jest.fn()
+  const fetchedNews = ['news1', 'news2']
+
+  mockRequest.mockReturnValue(fetchedNews)
+
+  const options = { action: mockRequest }
+  const enhance = withLocalFetch('news', options)
+  const TestComponent = enhance(viewStub)
+  const wrapper = mount(<TestComponent />)
+  const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+  await newsBtn.simulate('click')
+
+  const { state } = wrapper.instance()
+
+  expect(state.status).toBe(fetchStatus.ready)
+  expect(state.data).toBe(fetchedNews)
+  expect(mockRequest.mock.calls.length).toBe(1)
+})
+
+test('test with custom reducer', async () => {
+  testArgsForFetch = { type: 'PUSH' }
+  const mockRequest = jest.fn()
+  const fetchedNews = ['news1', 'news2']
+
+  mockRequest.mockReturnValue(fetchedNews)
+
+  const options = {
+    action: mockRequest,
+    reducer: (state = ['news main'], action) => {
+      switch (action.type) {
+        case 'PUSH': return [...state, ...action.payload]
+        default: return state
+      }
+    },
+  }
+  const enhance = withLocalFetch('news', options)
+  const TestComponent = enhance(viewStub)
+  const wrapper = mount(<TestComponent />)
+  const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+  await newsBtn.simulate('click')
+
+  const { state } = wrapper.instance()
+
+  expect(state.status).toBe(fetchStatus.ready)
+  expect(state.data).toEqual(['news main', ...fetchedNews])
+  expect(mockRequest.mock.calls.length).toBe(1)
 })
