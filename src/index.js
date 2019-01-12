@@ -1,4 +1,5 @@
 import React from 'react'
+import isPLainObject from 'is-plain-object'
 
 
 export const fetchStatus = {
@@ -8,71 +9,74 @@ export const fetchStatus = {
   ready: 4,
 }
 
-export const withLocalFetch = (requests = {}) => (
+const defaultOptions = {
+  reducer: (state, action = {}) => action.payload,
+}
+
+const log = (text, mode = 'error') => (
+  // eslint-disable-next-line prefer-template
+  console[mode]('[react-local-fetch]: ' + text)
+)
+
+export const withLocalFetch = (requestName, options) => (
   (BaseComponent) => (
     class WithLocalFetch extends React.Component {
       constructor(props) {
         super(props)
+        this.options = Object.assign(
+          defaultOptions,
+          typeof options === 'function' ? options(props) : options,
+        )
+        this.requestName = requestName
         this.state = {
-          requests: this.reduceRequests(requests),
+          data: this.options.reducer(undefined, {}),
+          status: fetchStatus.initial,
+          error: null,
         }
       }
 
-      reduceRequests = () => (
-        Object.keys(requests).reduce((acc, request) => {
-          const { action, initialResult } = requests[request]
-
-          return Object.assign({
-            [request]: {
-              fetch: (...args) => (
-                this.actionStarter({ fn: action, name: request, args })
-              ),
-              status: fetchStatus.initial,
-              result: (
-                typeof initialResult === 'function'
-                  ? initialResult(this.props)
-                  : initialResult
-              ),
-            },
-          }, acc)
-        }, {})
-      )
-
-      actionStarter = async ({ fn, name, args }) => {
+      fetch = async ({ type, ...args } = {}) => {
         try {
-          this.updateRequestState(name, { status: fetchStatus.loading })
-          const result = await fn(...args)
+          this.setState({ status: fetchStatus.loading })
+          const result = await this.options.action(...args)
 
-          this.updateRequestState(name, { status: fetchStatus.ready, result })
+          this.setState((prev) => {
+            return {
+              status: fetchStatus.ready,
+              data: this.options
+                .reducer(prev.data, { type, payload: result }),
+            }
+          })
           return result
         }
         catch (error) {
-          this.updateRequestState(name, { status: fetchStatus.fail })
+          this.setState({ status: fetchStatus.fail, error })
           return undefined
         }
       }
 
-      updateRequestState = (requestName, computedState) => {
-        this.setState((prev) => {
-          return {
-            requests: {
-              ...prev.requests,
-              [requestName]: {
-                ...prev.requests[requestName],
-                ...computedState,
-              },
-            },
-          }
-        })
+      dispatch = (action) => {
+        if (!isPLainObject(action)) {
+          log('action must be plain object')
+          return
+        }
+
+        const computedData = this.options
+          .reducer(this.state.data, action)
+
+        this.setState({ data: computedData })
       }
 
       render() {
-        return (
-          <BaseComponent
-            {...this.props}
-            {...this.state.requests}
-          />
-        )
+        return React
+          .createElement(BaseComponent, {
+            ...this.props,
+            [this.requestName]: {
+              ...this.state,
+              fetch: this.fetch,
+              dispatch: this.dispatch,
+            },
+          })
       }
     }
   )
