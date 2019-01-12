@@ -9,4 +9,4 @@ sudo: false
 
 script:
   - npm install
-  - npm test:code
+  - npm run test:code
