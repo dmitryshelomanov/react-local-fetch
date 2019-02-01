@@ -50,7 +50,7 @@ export const withLocalFetch = (requestName, options) => (
       fetch = async ({ type, ...args } = {}) => {
         try {
           this.setState({ status: fetchStatus.loading })
-          const result = await this.options.action(...args)
+          const result = await this.options.action(args)
 
           if (!this.isMountedMain) {
             return undefined
