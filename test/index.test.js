@@ -1,5 +1,5 @@
 import React from 'react'
-import Enzyme, { mount } from 'enzyme'
+import Enzyme, { mount, shallow } from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import renderer from 'react-test-renderer'
 import { withLocalFetch, fetchStatus } from '../src/index'
@@ -139,4 +139,40 @@ test('test with custom reducer', async () => {
   expect(state.status).toBe(fetchStatus.ready)
   expect(state.data).toEqual(['news main', ...fetchedNews])
   expect(mockRequest.mock.calls.length).toBe(1)
+})
+
+test('test async function with unmouting component', (done) => {
+  const willUnmount = jest.fn()
+
+  class Stub extends React.Component {
+    constructor(props) {
+      super(props)
+      this.componentWillUnmount = willUnmount
+    }
+
+    async componentDidMount() {
+      await this.props.users.fetch()
+      done()
+    }
+
+    render() {
+      return null
+    }
+  }
+  const mockRequest = () => new Promise((res) => {
+    setTimeout(() => {
+      res(true)
+    }, 3000)
+  })
+  const options = { action: mockRequest }
+  const enhance = withLocalFetch('users', options)
+  const TestComponent = enhance(Stub)
+  const wrapper = mount(<TestComponent />)
+  const { state } = wrapper.instance()
+
+  wrapper.unmount()
+
+  expect(state.status).toBe(fetchStatus.loading)
+  expect(state.data).toBe(undefined)
+  expect(willUnmount.mock.calls.length).toBe(1)
 })

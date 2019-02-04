@@ -23,22 +23,38 @@ export const withLocalFetch = (requestName, options) => (
     class WithLocalFetch extends React.Component {
       constructor(props) {
         super(props)
-        this.options = Object.assign(
-          defaultOptions,
-          typeof options === 'function' ? options(props) : options,
-        )
+        this.options = {
+          ...defaultOptions,
+          ...(
+            typeof options === 'function'
+              ? options(props) : options
+          ),
+        }
         this.requestName = requestName
         this.state = {
           data: this.options.reducer(undefined, {}),
           status: fetchStatus.initial,
           error: null,
         }
+        this.isMountedMain = false
+      }
+
+      componentDidMount() {
+        this.isMountedMain = true
+      }
+
+      componentWillUnmount() {
+        this.isMountedMain = false
       }
 
       fetch = async ({ type, ...args } = {}) => {
         try {
           this.setState({ status: fetchStatus.loading })
-          const result = await this.options.action(...args)
+          const result = await this.options.action(args)
+
+          if (!this.isMountedMain) {
+            return undefined
+          }
 
           this.setState((prev) => {
             return {
