@@ -3,11 +3,16 @@ import isPLainObject from 'is-plain-object'
 
 
 export const fetchStatus = {
-  initial: 1,
-  loading: 2,
-  fail: 3,
-  ready: 4,
+  failed: -1,
+  initial: 0,
+  loading: 1,
+  ready: 2,
 }
+
+export const isReady = (status) => status === fetchStatus.ready
+export const isFailed = (status) => status === fetchStatus.failed
+export const isInitial = (status) => status === fetchStatus.initial
+export const isLoading = (status) => status === fetchStatus.loading
 
 const defaultOptions = {
   reducer: (state, action = {}) => action.payload,
@@ -66,7 +71,7 @@ export const withLocalFetch = (requestName, options) => (
           return result
         }
         catch (error) {
-          this.setState({ status: fetchStatus.fail, error })
+          this.setState({ status: fetchStatus.failed, error })
           return undefined
         }
       }
