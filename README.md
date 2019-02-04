@@ -72,10 +72,10 @@ seems like an ordinary example, but if you have more pages and fetch call ? You 
 ## With lib (and recompose) example
 
 ```js
-import { withLocalFetch, fetchStatus } from 'react-local-fetch'
+import { withLocalFetch, isFailed } from 'react-local-fetch'
 import { compose, lifecycle } from 'recompose'
 
-
+// in follow code writed default behavior
 const newsReducer = (state = [], action) => {
   switch(action.type) {
     case 'SET': return ({
@@ -103,7 +103,7 @@ const enhance = compose(
 
 
 const view = ({ news }) => {
-  if (news.status === fetchStatus.fail) {
+  if (isFailed(news.status)) {
     return '...has some error'
   }
 
