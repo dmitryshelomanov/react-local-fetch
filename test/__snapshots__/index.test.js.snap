@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Should hoc render without error 1`] = `
+exports[`test react local fetch hoc Should hoc render without error 1`] = `
 <p>
   hello
 </p>
