@@ -8,6 +8,11 @@ Simple lib for fetch
 > ## Notice
 > This lib intended for react project without [hooks](https://reactjs.org/docs/hooks-intro.html)
 
+## Features
+* handle uniq request id
+* handle un mount state
+* provide default reducer
+
 ## You can use LocalFetching to...
 * * *
 # ...if you need to make fetch-request
