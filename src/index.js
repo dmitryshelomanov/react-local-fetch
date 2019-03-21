@@ -16,6 +16,7 @@ export const isLoading = (status) => status === fetchStatus.loading
 
 const defaultOptions = {
   reducer: (state, action = {}) => action.payload,
+  withClearPrevFetch: true,
 }
 
 const log = (text, mode = 'error') => (
@@ -42,6 +43,7 @@ export const withLocalFetch = (requestName, options) => (
           error: null,
         }
         this.isMountedMain = false
+        this.fetchId = 1
       }
 
       componentDidMount() {
@@ -53,28 +55,38 @@ export const withLocalFetch = (requestName, options) => (
       }
 
       fetch = async ({ type, ...args } = {}) => {
+        this.fetchId += 1
+        const localFetchId = this.fetchId
+
         try {
           this.setState({ status: fetchStatus.loading })
           const result = await this.options.action(args)
 
-          if (!this.isMountedMain) {
+          if (!this.isMountedMain || !this.isSameRequest(localFetchId)) {
             return undefined
           }
 
-          this.setState((prev) => {
-            return {
-              status: fetchStatus.ready,
-              data: this.options
-                .reducer(prev.data, { type, payload: result }),
-            }
-          })
+          this.setState((prev) => ({
+            status: fetchStatus.ready,
+            data: this.options
+              .reducer(prev.data, { type, payload: result }),
+          }))
+
           return result
         }
         catch (error) {
-          this.setState({ status: fetchStatus.failed, error })
+          if (this.isMountedMain && this.isSameRequest(localFetchId)) {
+            this.setState({ status: fetchStatus.failed, error })
+          }
+
           return undefined
         }
       }
+
+      isSameRequest = (fetchid) => (
+        this.options.withClearPrevFetch
+          ? this.fetchId === fetchid : true
+      )
 
       dispatch = (action) => {
         if (!isPLainObject(action)) {
