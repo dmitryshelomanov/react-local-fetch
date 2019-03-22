@@ -92,6 +92,8 @@ const newsReducer = (state = [], action) => {
 }
 
 const enhance = compose(
+  // callback might be a function
+  // with type (Props /* initial props */, () => Props /* actual props */)
   withLocalFetch('news', {
     action: apiFn,
     reducer: newsReducer,

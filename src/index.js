@@ -33,7 +33,7 @@ export const withLocalFetch = (requestName, options) => (
           ...defaultOptions,
           ...(
             typeof options === 'function'
-              ? options(props) : options
+              ? options(props, this.getProps) : options
           ),
         }
         this.requestName = requestName
@@ -53,6 +53,8 @@ export const withLocalFetch = (requestName, options) => (
       componentWillUnmount() {
         this.isMountedMain = false
       }
+
+      getProps = () => this.props
 
       fetch = async ({ type, ...args } = {}) => {
         this.fetchId += 1

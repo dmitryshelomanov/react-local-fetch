@@ -66,6 +66,22 @@ describe('test react local fetch hoc', () => {
     expect(mockRequest.mock.calls.length).toBe(1)
   })
 
+  test('Should getProps returns actual props', async () => {
+    const mockRequest = jest.fn()
+    const enhance = withLocalFetch('news', (_, getProps) => {
+      const props = getProps()
+
+      return { action: props.mockRequest }
+    })
+    const TestComponent = enhance(viewStub)
+    const wrapper = mount(<TestComponent mockRequest={mockRequest} />)
+    const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+    newsBtn.simulate('click')
+
+    expect(mockRequest.mock.calls.length).toBe(1)
+  })
+
   test('FetchStatus should be ready', async () => {
     const mockRequest = jest.fn()
     const enhance = withLocalFetch('news', { action: mockRequest })
