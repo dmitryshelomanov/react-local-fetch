@@ -200,6 +200,63 @@ describe('test react local fetch hoc', () => {
     expect(state.data).toBe(undefined)
     expect(willUnmount.mock.calls.length).toBe(1)
   })
+
+  describe('test option function', () => {
+    test('Failed did not call and ready did call', async () => {
+      const mockRequest = jest.fn()
+      const readyMock = jest.fn()
+      const failedMock = jest.fn()
+      const fetchedNews = ['news1', 'news2']
+
+      mockRequest.mockReturnValue(fetchedNews)
+
+      const options = {
+        action: mockRequest,
+        ready: readyMock,
+        failed: failedMock,
+      }
+      const enhance = withLocalFetch('news', options)
+      const TestComponent = enhance(viewStub)
+      const wrapper = mount(<TestComponent />)
+      const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+      await newsBtn.simulate('click')
+
+      const { state } = wrapper.instance()
+
+      expect(state.status).toBe(fetchStatus.ready)
+      expect(state.data).toBe(fetchedNews)
+      expect(mockRequest.mock.calls.length).toBe(1)
+      expect(failedMock.mock.calls.length).toBe(0)
+      expect(readyMock.mock.calls.length).toBe(1)
+    })
+
+    test('Ready did not call and failed did call', async () => {
+      const message = 'some error'
+      const readyMock = jest.fn()
+      const failedMock = jest.fn()
+      const mockRequest = () => {
+        throw new Error(message)
+      }
+      const enhance = withLocalFetch('news', {
+        action: mockRequest,
+        ready: readyMock,
+        failed: failedMock,
+      })
+      const TestComponent = enhance(viewStub)
+      const wrapper = mount(<TestComponent />)
+      const newsBtn = wrapper.find('[testid="fetchNews"]')
+
+      await newsBtn.simulate('click')
+ 
+      const { state } = wrapper.instance()
+
+      expect(state.status).toBe(fetchStatus.failed)
+      expect(state.error.message).toBe(message)
+      expect(failedMock.mock.calls.length).toBe(1)
+      expect(readyMock.mock.calls.length).toBe(0)
+    })
+  })
 })
 
 describe('test status support functions', () => {

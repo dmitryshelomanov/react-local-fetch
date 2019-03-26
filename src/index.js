@@ -17,6 +17,8 @@ export const isLoading = (status) => status === fetchStatus.loading
 const defaultOptions = {
   reducer: (state, action = {}) => action.payload,
   withClearPrevFetch: true,
+  failed: () => {},
+  ready: () => {},
 }
 
 const log = (text, mode = 'error') => (
@@ -68,16 +70,18 @@ export const withLocalFetch = (requestName, options) => (
             return undefined
           }
 
-          this.setState((prev) => ({
-            status: fetchStatus.ready,
-            data: this.options
-              .reducer(prev.data, { type, payload: result }),
-          }))
+          const data = this.options
+            .reducer(this.state.data, { type, payload: result })
+
+          this.options.ready(data)
+
+          this.setState({ status: fetchStatus.ready, data })
 
           return result
         }
         catch (error) {
           if (this.isMountedMain && this.isSameRequest(localFetchId)) {
+            this.options.failed(error)
             this.setState({ status: fetchStatus.failed, error })
           }
 
