@@ -12,6 +12,7 @@ Simple lib for fetch
 * handle uniq request id
 * handle un mount state
 * provide default reducer
+* hooks for fetch (failed & ready)
 
 ## You can use LocalFetching to...
 * * *
